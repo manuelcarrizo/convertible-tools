@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=autorotate
+Comment=Rotate screen on orientation changes
+Exec=BASE_DIR/autorotate/autorotate
+Type=Application

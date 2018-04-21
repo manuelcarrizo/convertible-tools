@@ -1,0 +1,7 @@
+
+LID_EVENTS="acpi/events/lid"
+LID_TPL="acpi/lid.sh.template"
+LID_FILE="acpi/lid.sh"
+
+DESKTOP_TPL="autorotate/autorotate.desktop.template"
+DESKTOP_FILE="autorotate/autorotate.desktop"

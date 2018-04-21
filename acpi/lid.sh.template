@@ -1,0 +1,14 @@
+#!/bin/bash
+
+export DEVICE_ID=$(xinput --list --long | grep XITouchClass | sort | uniq | tr -dc '0-9')
+export DISPLAY="DISPLAY_VALUE"
+export XAUTHORITY="XAUTHORITY_VALUE"
+
+grep -q closed /proc/acpi/button/lid/LID/state
+
+if [ $? = 0 ]
+then
+    xinput --disable $DEVICE_ID
+else
+    xinput --enable $DEVICE_ID
+fi

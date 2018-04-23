@@ -1,8 +1,9 @@
 #!/bin/bash
 
-export DEVICE_ID=$(xinput --list --long | grep XITouchClass | sort | uniq | tr -dc '0-9')
 export DISPLAY="DISPLAY_VALUE"
 export XAUTHORITY="XAUTHORITY_VALUE"
+
+export DEVICE_ID=$(xinput --list --long | grep XITouchClass | sort | uniq | tr -dc '0-9')
 
 grep -q closed /proc/acpi/button/lid/LID/state
 

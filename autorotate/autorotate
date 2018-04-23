@@ -9,32 +9,38 @@ import threading
 import socket
 
 from pydbus import SystemBus
-from gi.repository import GLib
+from gi.repository import GLib, Notify
 
 rotation_locked = False
 touchscreen_id = None
+touchpad_id = None
 
 orientations = {
     'normal': {
         'xrandr': 'normal',
-        'matrix': ['-1', '0', '0', '0', '-1', '0', '0', '0', '1']
+        'matrix': ['1', '0', '0', '0', '1', '0', '0', '0', '1'],
+        'touchpad': 'enable'
     },
     'bottom-up': {
         'xrandr': 'inverted',
-        'matrix': ['-1', '0', '-1', '0', '-1', '-1', '0', '0', '1']
+        'matrix': ['-1', '0', '1', '0', '-1', '1', '0', '0', '1'],
+        'touchpad': 'disable'
     },
     'left-up': {
         'xrandr': 'left',
-        'matrix': ['0', '-1', '-1', '-1', '0', '0', '0', '0', '1']
+        'matrix': ['0', '-1', '1', '1', '0', '0', '0', '0', '1'],
+        'touchpad': 'disable'
     },
     'right-up': {
         'xrandr': 'right',
-        'matrix': ['0', '-1', '0', '-1', '0', '-1', '0', '0', '1']
+        'matrix': ['0', '1', '0', '-1', '0', '1', '0', '0', '1'],
+        'touchpad': 'disable'
     }
 }
 
 SOCK = "/tmp/autorotate.sock"
 SINGLE_MONITOR = True # Don't rotate if an external monitor is connected
+DISABLE_TOUCHPAD = True # Disable the touchpad if is required in the orientation
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -49,9 +55,20 @@ def get_touchscreen_id():
         touchscreen_id = subprocess.check_output(
            "xinput --list --long | grep XITouchClass | sort | uniq | tr -dc '0-9'",
             shell=True
-        ).decode("utf-8")
+        ).decode("utf-8").strip()
 
     return touchscreen_id
+
+def get_touchpad_id():
+    global touchpad_id
+
+    if touchpad_id is None:
+        touchpad_id = subprocess.check_output(
+            "xinput list | grep -iPo 'touchpad.*id=\K\d+'",
+            shell=True
+        ).decode("utf-8").strip()
+    
+    return touchpad_id
 
 def monitor_count():
     return int(subprocess.check_output(
@@ -65,6 +82,9 @@ def rotate(orientation):
     subprocess.call(['xrandr', "-o", params['xrandr']])
     subprocess.call(['xinput', "set-prop", get_touchscreen_id(), 
                      "Coordinate Transformation Matrix"] + params['matrix'])
+    
+    if DISABLE_TOUCHPAD:
+        subprocess.call(['xinput', params['touchpad'], get_touchpad_id()])
 
 def handle_accelerometer(*data):
     if rotation_locked or (SINGLE_MONITOR and monitor_count() > 1):
@@ -89,8 +109,6 @@ async def handle_request(reader, writer):
     data = await reader.read(100)
     cmd = data.decode().strip()
 
-    print("command", cmd)
-
     if cmd == "enable":
         rotation_locked = False
     elif cmd == "disable":
@@ -98,6 +116,15 @@ async def handle_request(reader, writer):
     elif cmd == "toggle":
         rotation_locked ^= True
     
+    if rotation_locked:
+        status = "disabled"
+        icon = "preferences-desktop-user-password"
+    else:
+        status = "enabled"
+        icon = "preferences-desktop-screensaver"
+
+    Notify.Notification.new("Automatic rotation is %s" % status, "", icon).show()
+
     writer.close()
 
 def lock_autorotate_worker(loop):
@@ -120,6 +147,8 @@ def lock_autorotate_worker(loop):
     loop.close()
 
 def start_server():
+    Notify.init("Autorotate")
+
     sensor = threading.Thread(target=glib_worker, daemon=True)
 
     loop = asyncio.get_event_loop()
@@ -150,4 +179,3 @@ if __name__ == "__main__":
     else:
         start_server()
 
-    

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Toggle screen rotation
+Comment=Enable or disable the automatic screen rotation
+Exec=BASE_DIR/autorotate/autorotate toggle
+Type=Application
+Icon=preferences-desktop-wallpaper

@@ -1,0 +1,13 @@
+[Settings for Onboard]
+Description=Settings for Onboard
+above=true
+aboverule=2
+clientmachine=sinon
+clientmachinematch=0
+maximizehoriz=true
+maximizehorizrule=3
+title=Onboard
+titlematch=0
+wmclass=onboard
+wmclasscomplete=false
+wmclassmatch=1

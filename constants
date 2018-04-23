@@ -5,3 +5,6 @@ LID_FILE="acpi/lid.sh"
 
 DESKTOP_TPL="autorotate/autorotate.desktop.template"
 DESKTOP_FILE="autorotate/autorotate.desktop"
+
+TOGGLE_TPL="autorotate/toggle-rotation.desktop.template"
+TOGGLE_FILE="autorotate/toggle-rotation.desktop"
